@@ -5,15 +5,16 @@ namespace App\Takaden\Payment;
 use App\Takaden\Enums\PaymentProviders;
 use App\Takaden\Enums\PaymentStatus;
 use App\Takaden\Models\Payment;
-use App\Takaden\Models\Purchase;
 use App\Takaden\Notifications\PaymentNotification;
+use App\Takaden\Orderable;
+use App\Takaden\Payable;
 use Illuminate\Http\Request;
 
 abstract class PaymentHandler
 {
     public PaymentProviders $name;
 
-    abstract public function initiatePayment(Purchase $purchase);
+    abstract public function initiatePayment(Orderable $order);
 
     abstract public function validateSuccessfulPayment(Request $request): bool;
 
@@ -27,15 +28,15 @@ abstract class PaymentHandler
     /**
      * After payment successful action
      * 1. Update payment status to 'success'.
-     * 2. Mark the purchase as active.
-     * 3. Clear cache of customer's subscription, payment & purchase history.
+     * 2. Mark the order as active.
+     * 3. Clear cache of customer's subscription, payment & order history.
      */
-    public function afterPaymentSuccessful(Request $request): Payment
+    public function afterPaymentSuccessful(Request $request): Payable
     {
         $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::SUCCESS);
-        if ($payment->purchase && !$payment->purchase->is_active) {
-            $payment->purchase->is_active = true;
-            $payment->purchase->save();
+        if ($payment->order && !$payment->order->is_active) {
+            $payment->order->is_active = true;
+            $payment->order->save();
         }
         return $payment;
     }
@@ -43,14 +44,14 @@ abstract class PaymentHandler
     /**
      * After payment failed action
      * 1. Update the payment status to 'failed'.
-     * 2. Mark the purchase as inactive.
-     * 3. Clear cache of customer's subscription, payment & purchase history.
+     * 2. Mark the order as inactive.
+     * 3. Clear cache of customer's subscription, payment & order history.
      */
-    public function afterPaymentFailed(Request $request): Payment
+    public function afterPaymentFailed(Request $request): Payable
     {
         $payment = $this->updateStatusAndGetPayment($request, PaymentStatus::FAILED);
-        $payment->purchase->is_active = false;
-        $payment->purchase->save();
+        $payment->order->is_active = false;
+        $payment->order->save();
         return $payment;
     }
 
@@ -58,7 +59,7 @@ abstract class PaymentHandler
      * After payment cancelled action
      * 1. Update the payment status to 'cancelled'.
      */
-    public function afterPaymentCancelled(Request $request): Payment
+    public function afterPaymentCancelled(Request $request): Payable
     {
         return $this->updateStatusAndGetPayment($request, PaymentStatus::CANCELLED);
     }
@@ -67,7 +68,7 @@ abstract class PaymentHandler
      * Process the payload came from payment gateway,
      *  and create or update the payment record according to the payment status
      */
-    protected function updateStatusAndGetPayment(Request $request, PaymentStatus $status): Payment
+    protected function updateStatusAndGetPayment(Request $request, PaymentStatus $status): Payable
     {
         $paymentPayload = PayloadProcessor::process($request->all(), $this->name);
         $paymentPayload['status'] = $status;

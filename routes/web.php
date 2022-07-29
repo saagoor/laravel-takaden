@@ -1,5 +1,8 @@
 <?php
 
+use App\Models\Order;
+use App\Takaden\Payment\Handlers\BkashPaymentHandler;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,5 +17,23 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return BkashPaymentHandler::test();
+});
+
+Route::view('checkout', 'checkout.index');
+
+Route::post('checkout/initiate', function (Request $request) {
+    return (new BkashPaymentHandler)->initiatePayment(new Order([
+        'amount'    => $request->amount,
+        'id'        => 1,
+        'currency'  => 'BDT',
+    ]));
+});
+
+Route::post('checkout/execute', function (Request $request) {
+    return (new BkashPaymentHandler)->executePayment($request->payment_id);
+});
+
+Route::get('checkout/success', function (Request $request) {
+    dd("Success", $request->all());
 });

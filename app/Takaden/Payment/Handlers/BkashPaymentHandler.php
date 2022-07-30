@@ -3,8 +3,8 @@
 namespace App\Takaden\Payment\Handlers;
 
 use App\Models\Order;
+use App\Takaden\Enums\PaymentProviders;
 use App\Takaden\Orderable;
-use App\Takaden\Payable;
 use App\Takaden\Payment\PaymentHandler;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Http;
 
 class BkashPaymentHandler extends PaymentHandler
 {
+    public PaymentProviders $gatewayName = PaymentProviders::BKASH;
     protected array $config;
 
     public function __construct()
@@ -58,8 +59,11 @@ class BkashPaymentHandler extends PaymentHandler
             ->withHeaders(['x-app-key' => $this->config['app_key']])
             ->withToken($this->getToken())
             ->post('/checkout/payment/execute/' . $bkashPaymentId);
-        logger($response->json());
-        return $response->json();
+        $data = $response->json();
+        if ($data && isset($data['trxID']) && isset($data['transactionStatus']) && $data['transactionStatus'] === 'Completed') {
+            $this->afterPaymentSuccessful($data);
+            return true;
+        }
     }
 
     public function validateSuccessfulPayment(Request $request): bool

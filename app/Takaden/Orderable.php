@@ -2,6 +2,8 @@
 
 namespace App\Takaden;
 
+use Illuminate\Database\Eloquent\Model;
+
 interface Orderable
 {
     public function handleSuccessPayment(Payable $payment);
@@ -9,4 +11,6 @@ interface Orderable
     public function getTakadenAmount(): int;
     public function getTakadenCurrency(): string;
     public function getTakadenUniqueId(): string;
+    public function getTakadenPaymentTitle(): string;
+    public function getTakadenCustomer(): Model;
 }

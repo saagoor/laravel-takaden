@@ -12,6 +12,7 @@ class PayloadProcessor
         return match ($provider) {
             PaymentProviders::SSLCOMMERZ    => static::sslCommerz($payload),
             PaymentProviders::PADDLE        => static::paddle($payload),
+            PaymentProviders::BKASH         => static::bkash($payload),
             default                         => $payload,
         };
     }
@@ -40,6 +41,21 @@ class PayloadProcessor
             'paid_at'                   => (isset($payload['tran_date']) && $payload['tran_date']) ? Carbon::parse($payload['tran_date']) : now(),
             'providers_payment_id'      => $payload['tran_id'] ?? '',
             'providers_transaction_id'  => $payload['bank_tran_id'] ?? '',
+            'providers_payload'         => json_encode($payload),
+        ];
+    }
+
+    public static function bkash($payload)
+    {
+        return [
+            'payment_id'                => ($payload['value_a'] ?? null),
+            'method'                    => 'bkash',
+            'amount'                    => $payload['amount'] ?? 0,
+            'currency'                  => $payload['currency'],
+            'provider'                  => PaymentProviders::BKASH,
+            'paid_at'                   => (isset($payload['updateTime']) && $payload['updateTime']) ? Carbon::parse($payload['updateTime']) : now(),
+            'providers_payment_id'      => $payload['paymentID'] ?? '',
+            'providers_transaction_id'  => $payload['trxID'] ?? '',
             'providers_payload'         => json_encode($payload),
         ];
     }

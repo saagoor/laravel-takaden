@@ -3,7 +3,7 @@
 namespace App\Takaden\Payment\Handlers;
 
 use App\Takaden\Enums\PaymentProviders;
-use App\Takaden\Models\Purchase;
+use App\Takaden\Orderable;
 use App\Takaden\Payment\PaymentHandler;
 use DGvai\SSLCommerz\SSLCommerz;
 use Exception;
@@ -11,22 +11,22 @@ use Illuminate\Http\Request;
 
 class SSLCommerzPaymentHandler extends PaymentHandler
 {
-    public PaymentProviders $name = PaymentProviders::SSLCOMMERZ;
+    public PaymentProviders $gatewayName = PaymentProviders::SSLCOMMERZ;
 
-    public function initiatePayment(Purchase $purchase)
+    public function initiatePayment(Orderable $order)
     {
-        $customer = $purchase->customer;
+        $customer = $order->getTakadenCustomer();
         $email = $customer->email ?? config('mail.from.address', 'hello@example.com');
         $name = ($customer->name ?? config('app.name') . ' Customer');
         $phone = $customer->phone;
 
         $sslc = (new SSLCommerz)
-            ->amount($purchase->payment->payable_total)
-            ->setCurrency($purchase->payment->currency)
-            ->trxid($purchase->id)
-            ->product($purchase->getPaymentTitle())
+            ->amount($order->getTakadenAmount())
+            ->setCurrency($order->getTakadenCurrency())
+            ->trxid($order->getTakadenUniqueId())
+            ->product($order->getTakadenPaymentTitle())
             ->customer($name, $email, $phone)
-            ->setExtras($purchase->payment->id); // `value_a` is Payment ID
+            ->setExtras($order->getTakadenUniqueId()); // `value_a` is Payment ID
 
         return $sslc->make_payment(true);
     }

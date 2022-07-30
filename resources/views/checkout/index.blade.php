@@ -55,7 +55,9 @@
                         payment_id: paymentID,
                     }),
                     success: function (data) {
-                        if (data && data.paymentID != null) {
+                        if (data) {
+                            console.log(data);
+                            alert("Payment successfull.");
                             window.location.href = MERCHANT_FRONTEND_PAYMENT_SUCCESSFULL_PAGE_URL;
                         } else {
                             bKash.execute().onError();

@@ -70,7 +70,7 @@ abstract class PaymentHandler
      */
     protected function updateStatusAndGetPayment(Request $request, PaymentStatus $status): Payable
     {
-        $paymentPayload = PayloadProcessor::process($request->all(), $this->name);
+        $paymentPayload = PayloadProcessor::process($request->all(), $this->gatewayName);
         $paymentPayload['status'] = $status;
         $payment = Payment::findOrNew($paymentPayload['payment_id']);
         $payment->update($paymentPayload);

@@ -2,8 +2,8 @@
 
 namespace App\Rules;
 
-use App\Models\Coupon as ModelsCoupon;
 use App\Takaden\Helpers\Currency;
+use App\Takaden\Models\Coupon as ModelsCoupon;
 use Illuminate\Contracts\Validation\DataAwareRule;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;

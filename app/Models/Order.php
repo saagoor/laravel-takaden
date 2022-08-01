@@ -35,4 +35,18 @@ class Order extends Model implements Orderable
     {
         return $this::class;
     }
+
+    public function getTakadenPaymentTitle(): string
+    {
+        return "Order #123";
+    }
+
+    public function getTakadenCustomer(): Model
+    {
+        return new User([
+            'name'  => 'MH Sagor',
+            'email' => 'mhsagor91@gmail.com',
+            'phone' => '01775755272',
+        ]);
+    }
 }

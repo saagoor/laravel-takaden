@@ -60,6 +60,7 @@ class BkashPaymentHandler extends PaymentHandler
             ->withToken($this->getToken())
             ->post('/checkout/payment/execute/' . $bkashPaymentId);
         $data = $response->json();
+        logger($data);
         if ($data && isset($data['trxID']) && isset($data['transactionStatus']) && $data['transactionStatus'] === 'Completed') {
             $this->afterPaymentSuccessful($data);
             return true;

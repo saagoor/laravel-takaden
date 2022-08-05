@@ -29,11 +29,11 @@ class Order extends Model implements Orderable
     }
     public function getTakadenUniqueId(): string
     {
-        return md5(time());
+        return 'TRIPTOPIA' . md5(time());
     }
     public function getTakadenRedirectUrl(): string
     {
-        return 'https://triptopia.com.bd/checkout/upay/validate/';
+        return route('checkout.validate');
     }
     public function getTakadenClassName(): string
     {

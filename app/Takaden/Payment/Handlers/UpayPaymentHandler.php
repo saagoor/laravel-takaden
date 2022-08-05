@@ -36,9 +36,9 @@ class UpayPaymentHandler extends PaymentHandler
     public function initiatePayment(Orderable $order)
     {
         $response = Http::baseUrl($this->config['base_url'])
-            ->withHeaders([
-                'Authorization' => 'UPAY ' . $this->getAuthToken(),
-            ])
+            ->contentType('application/json')
+            ->acceptJson()
+            ->withToken($this->getAuthToken(), 'UPAY')
             ->post('/payment/merchant-payment-init/', [
                 'date'                      => date('Y-m-d'),
                 'txn_id'                    => $order->getTakadenUniqueId(),
@@ -52,14 +52,7 @@ class UpayPaymentHandler extends PaymentHandler
                 'merchant_category_code'    => $this->config['merchant_code'],
                 'merchant_mobile'           => $this->config['merchant_mobile'],
                 'transaction_currency_code' => $order->getTakadenCurrency(),
-                'redirect _url'             => $order->getTakadenRedirectUrl(),
-                "additional_info"           => [
-                    'data'  => 'example',
-                ],
-                "is_cashback"               => false,
-                "cashback_amount"           => 0.00,
-                "cashback_wallet"           => $this->config['merchant_mobile'],
-                "seat_count"                => "1"
+                'redirect_url'              => $order->getTakadenRedirectUrl(),
             ]);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['gateway_url'];
@@ -70,11 +63,9 @@ class UpayPaymentHandler extends PaymentHandler
     public function validateSuccessfulPayment(Request $request): bool
     {
         $response = Http::baseUrl($this->config['base_url'])
-            ->withHeaders([
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
-                'Authorization' => 'UPAY ' . $this->getAuthToken(),
-            ])
+            ->contentType('application/json')
+            ->acceptJson()
+            ->withToken($this->getAuthToken(), 'UPAY')
             ->get('/payment/single-payment-status/' . $request->txn_id);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['status'] === 'success';

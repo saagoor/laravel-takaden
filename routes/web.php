@@ -31,8 +31,8 @@ Route::post('checkout/initiate', function (Request $request) {
         'sslcommerz'    => new SSLCommerzPaymentHandler,
     };
     return $handler->initiatePayment(new Order([
-        'uid'       => 'Upay465416543461538',
-        'amount'    => 150.50,
+        'id'        => 1,
+        'amount'    => 20,
         'currency'  => 'BDT',
     ]));
 })->name('checkout.initiate');

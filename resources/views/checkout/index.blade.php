@@ -35,11 +35,9 @@
                     })
                 })
                 .then(async (res) => {
-                    const data = await res.json();
+                    const data = await res.text();
                     if (data) {
-                        // alert(data);
-                        console.log(data);
-                        // window.location.href = data;
+                        window.location.href = data;
                     } else {
                         alert('Whoops! Something went wrong.');
                     }

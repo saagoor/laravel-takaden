@@ -2,6 +2,8 @@
 
 use App\Models\Order;
 use App\Takaden\Payment\Handlers\BkashPaymentHandler;
+use App\Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
+use App\Takaden\Payment\Handlers\UpayPaymentHandler;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,17 +25,26 @@ Route::get('/', function () {
 Route::view('checkout', 'checkout.index');
 
 Route::post('checkout/initiate', function (Request $request) {
-    return (new BkashPaymentHandler)->initiatePayment(new Order([
-        'amount'    => $request->amount,
-        'id'        => 1,
+    $handler = match ($request->payment_method) {
+        'bkash'         => new BkashPaymentHandler,
+        'upay'          => new UpayPaymentHandler,
+        'sslcommerz'    => new SSLCommerzPaymentHandler,
+    };
+    return $handler->initiatePayment(new Order([
+        'uid'       => 'Upay465416543461538',
+        'amount'    => 150.50,
         'currency'  => 'BDT',
     ]));
-});
+})->name('checkout.initiate');
 
 Route::post('checkout/execute', function (Request $request) {
     return (new BkashPaymentHandler)->executePayment($request->payment_id);
-});
+})->name('checkout.execute');
+
+Route::get('checkout/validate', function (Request $request) {
+    dd("validate", $request->all());
+})->name('checkout.validate');
 
 Route::get('checkout/success', function (Request $request) {
     dd("Success", $request->all());
-});
+})->name('checkout.success');

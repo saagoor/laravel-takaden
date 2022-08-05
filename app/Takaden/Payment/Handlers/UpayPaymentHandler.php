@@ -37,30 +37,34 @@ class UpayPaymentHandler extends PaymentHandler
     {
         $response = Http::baseUrl($this->config['base_url'])
             ->withHeaders([
-                'Content-Type'  => 'application/json',
-                'Accept'        => 'application/json',
                 'Authorization' => 'UPAY ' . $this->getAuthToken(),
             ])
-            ->post('/payment/merchant-payment-init', [
-                'merchant_id'               => $this->config['merchant_id'],
-                'merchant_key'              => $this->config['merchant_key'],
-                'merchant_code'             => $this->config['merchant_code'],
-                'merchant_name'             => $this->config['merchant_name'],
-                'merchant_country_code'     => $this->config['merchant_country'],
-                'merchant_city'             => $this->config['merchant_city'],
-                'merchant_category_code'    => $this->config['merchant_code'],
-                'merchant_mobile'           => $this->config['merchant_mobile'],
+            ->post('/payment/merchant-payment-init/', [
                 'date'                      => date('Y-m-d'),
                 'txn_id'                    => $order->getTakadenUniqueId(),
                 'invoice_id'                => $order->getTakadenUniqueId(),
                 'amount'                    => $order->getTakadenAmount(),
+                'merchant_id'               => $this->config['merchant_id'],
+                'merchant_name'             => $this->config['merchant_name'],
+                'merchant_code'             => $this->config['merchant_code'],
+                'merchant_country_code'     => $this->config['merchant_country'],
+                'merchant_city'             => $this->config['merchant_city'],
+                'merchant_category_code'    => $this->config['merchant_code'],
+                'merchant_mobile'           => $this->config['merchant_mobile'],
                 'transaction_currency_code' => $order->getTakadenCurrency(),
                 'redirect _url'             => $order->getTakadenRedirectUrl(),
+                "additional_info"           => [
+                    'data'  => 'example',
+                ],
+                "is_cashback"               => false,
+                "cashback_amount"           => 0.00,
+                "cashback_wallet"           => $this->config['merchant_mobile'],
+                "seat_count"                => "1"
             ]);
         if ($response->successful() && $data = $response->json('data')) {
             return $data['gateway_url'];
         }
-        throw new Exception($response->json('message', 'Something went wrong.') . ' Unable to initiate payment with upay.');
+        throw new Exception($response->json('message', 'Something went wrong') . '. Unable to initiate payment with upay.');
     }
 
     public function validateSuccessfulPayment(Request $request): bool
@@ -80,11 +84,11 @@ class UpayPaymentHandler extends PaymentHandler
 
     protected function getAuthToken()
     {
-        return Cache::remember('upay_auth_token', now()->addMinutes(30), function () {
+        return Cache::remember('upay_auth_token', now()->addMinutes(10), function () {
             $response = Http::baseUrl($this->config['base_url'])
                 ->contentType('application/json')
                 ->acceptJson()
-                ->post('/payment/merchant-auth', [
+                ->post('/payment/merchant-auth/', [
                     'merchant_id'   => $this->config['merchant_id'],
                     'merchant_key'  => $this->config['merchant_key'],
                 ]);

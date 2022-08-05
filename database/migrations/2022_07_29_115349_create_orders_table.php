@@ -15,6 +15,10 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable();
+            $table->string('payment_method')->nullable();
+            $table->string('currency')->nullable();
+            $table->float('amount')->nullable();
             $table->timestamps();
         });
     }

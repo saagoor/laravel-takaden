@@ -19,7 +19,7 @@ class Order extends Model implements Orderable
     public function handleFailPayment(Payable $payment)
     {
     }
-    public function getTakadenAmount(): int
+    public function getTakadenAmount(): float
     {
         return $this->amount;
     }
@@ -29,11 +29,11 @@ class Order extends Model implements Orderable
     }
     public function getTakadenUniqueId(): string
     {
-        return $this->id;
+        return md5(time());
     }
     public function getTakadenRedirectUrl(): string
     {
-        return url();
+        return 'https://triptopia.com.bd/checkout/upay/validate/';
     }
     public function getTakadenClassName(): string
     {

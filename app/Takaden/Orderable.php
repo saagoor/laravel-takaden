@@ -11,6 +11,7 @@ interface Orderable
     public function getTakadenAmount(): int;
     public function getTakadenCurrency(): string;
     public function getTakadenUniqueId(): string;
+    public function getTakadenRedirectUrl(): string;
     public function getTakadenPaymentTitle(): string;
     public function getTakadenCustomer(): Model;
 }

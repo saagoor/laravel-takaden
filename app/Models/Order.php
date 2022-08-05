@@ -31,11 +31,14 @@ class Order extends Model implements Orderable
     {
         return $this->id;
     }
+    public function getTakadenRedirectUrl(): string
+    {
+        return url();
+    }
     public function getTakadenClassName(): string
     {
         return $this::class;
     }
-
     public function getTakadenPaymentTitle(): string
     {
         return "Order #123";

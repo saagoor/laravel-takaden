@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Http;
 class BkashPaymentHandler extends PaymentHandler
 {
     public PaymentProviders $gatewayName = PaymentProviders::BKASH;
+
     protected array $config;
 
     public function __construct()

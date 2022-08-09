@@ -16,9 +16,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
 
-Route::view('checkout', 'checkout.index');
-Route::view('checkout/success')->name('checkout.success');
-Route::view('checkout/failure')->name('checkout.failure');
+Route::view('checkout', 'checkout.index')->name('checkout.index');
+Route::view('checkout/success', 'checkout.success')->name('checkout.success');
+Route::view('checkout/failure', 'checkout.failure')->name('checkout.failure');
 
 Route::post('checkout/initiate', [CheckoutController::class, 'initiatePayment'])->name('checkout.initiate');
 Route::post('checkout/execute', [CheckoutController::class, 'executePayment'])->name('checkout.execute');

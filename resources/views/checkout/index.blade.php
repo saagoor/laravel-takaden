@@ -1,22 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-    <meta
-        http-equiv="X-UA-Compatible"
-        content="ie=edge"
-    >
-    <title>Takaden Checkout</title>
-
-</head>
-
-<body>
+<x-app-layout title="Checkout Details">
     <div>
+        <h1>Checkout Details</h1>
         <button onclick="payWithUpay(event)">Pay with Upay</button>
     </div>
 
@@ -46,8 +30,4 @@
                 })
         }
     </script>
-
-
-</body>
-
-</html>
+</x-app-layout>

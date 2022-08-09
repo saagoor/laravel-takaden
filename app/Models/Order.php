@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Takaden\Orderable;
-use App\Takaden\Payable;
+use Takaden\Orderable;
+use Takaden\Payable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

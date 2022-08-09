@@ -1,10 +1,6 @@
 <?php
 
-use App\Models\Order;
-use App\Takaden\Payment\Handlers\BkashPaymentHandler;
-use App\Takaden\Payment\Handlers\SSLCommerzPaymentHandler;
-use App\Takaden\Payment\Handlers\UpayPaymentHandler;
-use Illuminate\Http\Request;
+use App\Http\Controllers\CheckoutController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,33 +14,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return BkashPaymentHandler::test();
-});
+Route::view('/', 'welcome');
 
 Route::view('checkout', 'checkout.index');
+Route::view('checkout/success')->name('checkout.success');
+Route::view('checkout/failure')->name('checkout.failure');
 
-Route::post('checkout/initiate', function (Request $request) {
-    $handler = match ($request->payment_method) {
-        'bkash'         => new BkashPaymentHandler,
-        'upay'          => new UpayPaymentHandler,
-        'sslcommerz'    => new SSLCommerzPaymentHandler,
-    };
-    return $handler->initiatePayment(new Order([
-        'id'        => 1,
-        'amount'    => 20,
-        'currency'  => 'BDT',
-    ]));
-})->name('checkout.initiate');
-
-Route::post('checkout/execute', function (Request $request) {
-    return (new BkashPaymentHandler)->executePayment($request->payment_id);
-})->name('checkout.execute');
-
-Route::get('checkout/validate', function (Request $request) {
-    dd("validate", $request->all());
-})->name('checkout.validate');
-
-Route::get('checkout/success', function (Request $request) {
-    dd("Success", $request->all());
-})->name('checkout.success');
+Route::post('checkout/initiate', [CheckoutController::class, 'initiatePayment'])->name('checkout.initiate');
+Route::post('checkout/execute', [CheckoutController::class, 'executePayment'])->name('checkout.execute');
+Route::get('checkout/validate', [CheckoutController::class, 'validatePayment'])->name('checkout.validate');

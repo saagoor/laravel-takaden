@@ -1,26 +1,28 @@
 <x-app-layout title="Checkout Details">
     <div x-data="{
         routes: {
-            init: '{{ route('checkout.initiate') }}',
-            success: '{{ route('checkout.success') }}',
-            failure: '{{ route('checkout.failure') }}',
+            initiate: '{{ route('takaden.checkout.initiate') }}',
+            execute: '{{ route('takaden.checkout.execute') }}',
+            success: '{{ route('takaden.checkout.success') }}',
+            failure: '{{ route('takaden.checkout.failure') }}',
+            cancel: '{{ route('takaden.checkout.cancel') }}',
             complete: '{{ route('checkout.complete') }}',
         },
         errors: {},
-        loading: false,
         props: {
             paymentProvider: 'cash',
             order: @js($order),
+            loading: false,
         },
         init() {
             console.log(this.props.order, this.routes)
         },
         initPayment() {
-            this.loading = true;
+            this.props.loading = true;
             this.errors = {};
-            axios.post(this.routes.init + '/' + this.props.paymentProvider, {
-                payment_provider: this.props.paymentProvider,
-                order_id: '{{ request('order_id') }}',
+            axios.post(this.routes.initiate + '/' + this.props.paymentProvider, {
+                orderable_id: '{{ $order->id }}',
+                orderable_type: @js($order::class),
             }).then((res) => {
                 if (res.data) {
                     console.log(this.props.paymentProvider, res.data);
@@ -38,7 +40,7 @@
                     };
                 }
                 console.log(err.response)
-            }).finally(() => this.loading = false);
+            }).finally(() => this.props.loading = false);
         },
         proceedWithProvider(responseData) {
             switch (this.props.paymentProvider) {
@@ -122,9 +124,12 @@
                     </div>
                     <button
                         type="submit"
-                        class="px-4 py-2 transition bg-blue-400 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="loading"
-                    >Continue</button>
+                        class="flex items-center gap-2 px-4 py-2 transition bg-blue-400 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        :disabled="props.loading"
+                    >
+                        <x-icons.spinner x-show="props.loading" />
+                        <span>Continue</span>
+                    </button>
                     <template x-if="errors && Object.keys(errors).length > 0">
                         <ul class="text-red-500">
                             <template x-for="error in errors">

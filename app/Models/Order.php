@@ -6,7 +6,6 @@ use Takaden\Orderable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Takaden\Enums\PaymentProviders;
 
 class Order extends Model implements Orderable
 {
@@ -31,10 +30,6 @@ class Order extends Model implements Orderable
     {
         return $this->currency;
     }
-    public function getTakadenRedirectUrl(PaymentProviders $paymentProvider): string
-    {
-        return route('checkout.validate', $paymentProvider);
-    }
     public function getTakadenClassName(): string
     {
         return $this::class;
@@ -46,10 +41,10 @@ class Order extends Model implements Orderable
 
     public function getTakadenCustomer(): Model
     {
-        return new User([
+        return User::firstOrNew([
+            'id'    => 1,
             'name'  => 'MH Sagor',
             'email' => 'mhsagor91@gmail.com',
-            'phone' => '01775755272',
         ]);
     }
 

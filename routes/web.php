@@ -19,11 +19,10 @@ Route::get('/', function () {
     return view('welcome', ['order' => Order::factory()->create()]);
 })->name('welcome');
 
-Route::get('checkout', fn () => view('checkout.index', ['order' => Order::find(request('order_id'))]))->name('checkout.index');
-Route::get('checkout/success', fn () => view('checkout.success', ['order' => Order::find(request('order_id'))]))->name('checkout.success');
-Route::get('checkout/failure', fn () => view('checkout.failure', ['order' => Order::find(request('order_id'))]))->name('checkout.failure');
-Route::get('checkout/complete', fn () => view('checkout.complete', ['order' => Order::find(request('order_id'))]))->name('checkout.complete');
+// Overwrite Takaden Routes
+Route::post('takaden/checkout/initiate/{provider?}', [CheckoutController::class, 'initiate'])->name('takaden.checkout.initiate');
 
-Route::post('checkout/initiate/{paymentProvider?}', [CheckoutController::class, 'initiatePayment'])->name('checkout.initiate');
-Route::post('checkout/execute/{paymentProvider?}', [CheckoutController::class, 'executePayment'])->name('checkout.execute');
-Route::get('checkout/validate/{paymentProvider?}', [CheckoutController::class, 'validatePayment'])->name('checkout.validate');
+Route::get('checkout', fn () => view('checkout.index', ['order' => Order::findOrFail(request('order_id'))]))->name('checkout.index');
+Route::get('checkout/complete', fn () => view('checkout.complete', ['order' => Order::find(request('orderable_id'))]))->name('checkout.complete');
+Route::get('checkout/failure', fn () => view('checkout.failure', ['order' => Order::find(request('orderable_id'))]))->name('checkout.failure');
+Route::get('checkout/cancelled', fn () => view('checkout.cancelled', ['order' => Order::find(request('orderable_id'))]))->name('checkout.cancelled');

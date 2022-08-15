@@ -3,9 +3,10 @@
 namespace App\Models;
 
 use Takaden\Orderable;
-use Takaden\Payable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
+use Takaden\Enums\PaymentProviders;
 
 class Order extends Model implements Orderable
 {
@@ -13,10 +14,13 @@ class Order extends Model implements Orderable
 
     protected $guarded = [];
 
-    public function handleSuccessPayment(Payable $payment)
+    public function handleSuccessPayment(array $payload)
     {
     }
-    public function handleFailPayment(Payable $payment)
+    public function handleFailPayment(array $payload)
+    {
+    }
+    public function handleCancelPayment(array $payload)
     {
     }
     public function getTakadenAmount(): float
@@ -27,13 +31,9 @@ class Order extends Model implements Orderable
     {
         return $this->currency;
     }
-    public function getTakadenUniqueId(): string
+    public function getTakadenRedirectUrl(PaymentProviders $paymentProvider): string
     {
-        return 'TRIPTOPIA' . md5(time());
-    }
-    public function getTakadenRedirectUrl(): string
-    {
-        return route('checkout.validate');
+        return route('checkout.validate', $paymentProvider);
     }
     public function getTakadenClassName(): string
     {
@@ -51,5 +51,12 @@ class Order extends Model implements Orderable
             'email' => 'mhsagor91@gmail.com',
             'phone' => '01775755272',
         ]);
+    }
+
+    public function getTakadenNotifiables(): Collection|array
+    {
+        return [
+            $this->getTakadenCustomer(),
+        ];
     }
 }

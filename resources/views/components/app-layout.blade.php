@@ -15,7 +15,7 @@
             {{ $head }}
         @endisset
     </head>
-    <body class="antialiased">
+    <body class="antialiased bg-gray-100">
         {{ $slot }}
         @isset($footer)
             {{ $footer }}

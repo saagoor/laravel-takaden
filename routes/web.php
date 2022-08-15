@@ -24,6 +24,6 @@ Route::get('checkout/success', fn () => view('checkout.success', ['order' => Ord
 Route::get('checkout/failure', fn () => view('checkout.failure', ['order' => Order::find(request('order_id'))]))->name('checkout.failure');
 Route::get('checkout/complete', fn () => view('checkout.complete', ['order' => Order::find(request('order_id'))]))->name('checkout.complete');
 
-Route::post('checkout/initiate', [CheckoutController::class, 'initiatePayment'])->name('checkout.initiate');
-Route::post('checkout/execute', [CheckoutController::class, 'executePayment'])->name('checkout.execute');
-Route::get('checkout/validate', [CheckoutController::class, 'validatePayment'])->name('checkout.validate');
+Route::post('checkout/initiate/{paymentProvider?}', [CheckoutController::class, 'initiatePayment'])->name('checkout.initiate');
+Route::post('checkout/execute/{paymentProvider?}', [CheckoutController::class, 'executePayment'])->name('checkout.execute');
+Route::get('checkout/validate/{paymentProvider?}', [CheckoutController::class, 'validatePayment'])->name('checkout.validate');

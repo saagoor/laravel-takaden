@@ -4,6 +4,7 @@
         @if ($order)
         <p>Payment Method: {{ $order->payment_method }}</p>
         <p>Total: {{ $order->amount }} {{ $order->currency }}</p>
+        <x-order-info :order="$order" />
         @endif
         <p>
             <a href="{{ route('welcome') }}" class="px-4 py-2 bg-blue-400 rounded-md">Go Back</a>

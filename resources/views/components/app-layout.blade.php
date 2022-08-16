@@ -16,7 +16,9 @@
         @endisset
     </head>
     <body class="antialiased bg-gray-100">
-        {{ $slot }}
+        <div class="max-w-full mx-auto prose-sm prose">
+            {{ $slot }}
+        </div>
         @isset($footer)
             {{ $footer }}
         @endisset

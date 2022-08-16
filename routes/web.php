@@ -23,6 +23,7 @@ Route::get('/', function () {
 Route::post('takaden/checkout/initiate/{provider?}', [CheckoutController::class, 'initiate'])->name('takaden.checkout.initiate');
 
 Route::get('checkout', fn () => view('checkout.index', ['order' => Order::findOrFail(request('order_id'))]))->name('checkout.index');
-Route::get('checkout/complete', fn () => view('checkout.complete', ['order' => Order::find(request('orderable_id'))]))->name('checkout.complete');
-Route::get('checkout/failure', fn () => view('checkout.failure', ['order' => Order::find(request('orderable_id'))]))->name('checkout.failure');
-Route::get('checkout/cancelled', fn () => view('checkout.cancelled', ['order' => Order::find(request('orderable_id'))]))->name('checkout.cancelled');
+Route::get('checkout/complete', fn () => view('checkout.complete', ['order' => Order::with('checkout')->find(request('orderable_id'))]))->name('checkout.complete');
+Route::get('checkout/success', fn () => view('checkout.success', ['order' => Order::with('checkout')->find(request('orderable_id'))]))->name('checkout.success');
+Route::get('checkout/failure', fn () => view('checkout.failure', ['order' => Order::with('checkout')->find(request('orderable_id'))]))->name('checkout.failure');
+Route::get('checkout/cancelled', fn () => view('checkout.cancelled', ['order' => Order::with('checkout')->find(request('orderable_id'))]))->name('checkout.cancelled');

@@ -1,87 +1,144 @@
+@push('head')
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="{{ config('takaden.providers.bkash.script_url') }}"></script>
+@endpush
 <x-app-layout title="Checkout Details">
     <div x-data="{
-        routes: {
-            initiate: '{{ route('takaden.checkout.initiate') }}',
-            execute: '{{ route('takaden.checkout.execute') }}',
-            success: '{{ route('takaden.checkout.success') }}',
-            failure: '{{ route('takaden.checkout.failure') }}',
-            cancel: '{{ route('takaden.checkout.cancel') }}',
-            complete: '{{ route('checkout.complete') }}',
-        },
-        errors: {},
-        props: {
-            paymentProvider: 'cash',
-            order: @js($order),
-            loading: false,
-        },
-        init() {
-            console.log(this.props.order, this.routes)
-        },
-        initPayment() {
-            this.props.loading = true;
-            this.errors = {};
-            axios.post(this.routes.initiate + '/' + this.props.paymentProvider, {
-                orderable_id: '{{ $order->id }}',
-                orderable_type: @js($order::class),
-            }).then((res) => {
-                if (res.data) {
-                    console.log(this.props.paymentProvider, res.data);
-                    this.proceedWithProvider(res.data);
-                } else {
-                    alert('Whoops! Something went wrong.');
+        getInitiateUrl() {
+                return '{{ route('takaden.checkout.initiate') }}' + '/' + this.props.paymentProvider;
+            },
+            getExecuteUrl() {
+                return '{{ route('takaden.checkout.execute') }}' + '/' + this.props.paymentProvider;
+            },
+            getSuccessUrl() {
+                return '{{ route('checkout.success') }}' + '?orderable_id=' + this.props.orderableId + '&orderable_type=' + this.props.orderableType;
+            },
+            getFailureUrl() {
+                return '{{ route('checkout.failure') }}' + '?orderable_id=' + this.props.orderableId + '&orderable_type=' + this.props.orderableType;
+            },
+            getCompleteUrl() {
+                return '{{ route('checkout.complete') }}' + '?orderable_id=' + this.props.orderableId + '&orderable_type=' + this.props.orderableType;
+            },
+            errors: {},
+            props: {
+                paymentProvider: 'cash',
+                order: @js($order),
+                orderableId: @js($order->id),
+                orderableType: @js($order::class),
+                loading: false,
+                initResponse: {},
+            },
+            init() {
+                bKash.init({
+                    paymentMode: 'checkout',
+                    paymentRequest: {
+                        amount: this.props.order.total,
+                        intent: 'authorization',
+                    },
+                    createRequest: () => {
+                        this.initPayment()
+                    },
+                    executeRequestOnAuthorization: () => {
+                        this.executePayment({
+                            payment_id: this.props.initResponse.paymentID,
+                        })
+                    },
+                });
+            },
+            handleCheckoutFormSubmit() {
+                switch (this.props.paymentProvider) {
+                    case 'bkash':
+                        document.getElementById('bKash_button').click();
+                        break;
+                    default:
+                        this.initPayment();
+                        break;
                 }
-            }).catch(err => {
-                if (err.response?.status === 422) {
-                    this.errors = err.response.data.errors;
-                } else {
-                    this.errors = {
-                        0: err.message,
-                        1: err.response?.data?.message,
-                    };
+            },
+            initPayment() {
+                this.props.loading = true;
+                this.errors = {};
+                axios.post(this.getInitiateUrl(), {
+                    orderable_id: this.props.orderableId,
+                    orderable_type: this.props.orderableType,
+                }).then((res) => {
+                    if (res.data) {
+                        this.props.initResponse = res.data;
+                        return this.proceedWithProvider(true, res.data);
+                    } else {
+                        throw new Error('Whoops! Something went wrong.');
+                    }
+                }).catch(err => {
+                    if (err.response?.status === 422) {
+                        this.errors = err.response.data.errors;
+                    } else {
+                        this.errors = {
+                            0: err.message,
+                            1: err.response?.data?.message,
+                        };
+                    }
+                    return this.proceedWithProvider(false, err.response);
+                }).finally(() => this.props.loading = false);
+            },
+            executePayment(payload) {
+                axios.post(this.getExecuteUrl(), payload)
+                    .then(response => { window.location.href = this.getSuccessUrl(); })
+                    .catch(err => {
+                        if (err.response?.status === 422) {
+                            this.errors = err.response.data.errors;
+                        } else {
+                            this.errors = {
+                                0: err.message,
+                                1: err.response?.data?.message,
+                            };
+                        }
+                        return this.proceedWithProvider(false, err.response);
+                    });
+            },
+            proceedWithProvider(success, responseData) {
+                switch (this.props.paymentProvider) {
+                    case 'cash':
+                        this.proceedWithCash(success, responseData);
+                        break;
+                    case 'upay':
+                        this.proceedWithUpay(success, responseData);
+                        break;
+                    case 'bkash':
+                        this.proceedWithBkash(success, responseData);
+                        break;
+                    case 'rocket':
+                        this.proceedWithRocket(success, responseData);
+                        break;
+                    case 'nagad':
+                        this.proceedWithNagad(success, responseData);
+                        break;
                 }
-                console.log(err.response)
-            }).finally(() => this.props.loading = false);
-        },
-        proceedWithProvider(responseData) {
-            switch (this.props.paymentProvider) {
-                case 'cash':
-                    this.proceedWithCash(responseData);
-                    break;
-                case 'upay':
-                    this.proceedWithUpay(responseData);
-                    break;
-                case 'bkash':
-                    this.proceedWithBkash(responseData);
-                    break;
-                case 'rocket':
-                    this.proceedWithRocket(responseData);
-                    break;
-                case 'nagad':
-                    this.proceedWithNagad(responseData);
-                    break;
-            }
-        },
-        proceedWithCash(responseData) {
-            window.location.href = this.routes.complete + '?order_id=' + this.props.order.id;
-        },
-        proceedWithUpay(responseData) {
-            window.location.href = responseData;
-        },
-        proceedWithBkash(responseData) {
+            },
+            proceedWithCash(success, responseData) {
+                window.location.href = this.getCompleteUrl();
+            },
+            proceedWithUpay(success, responseData) {
+                window.location.href = responseData;
+            },
+            proceedWithBkash(success, responseData) {
+                if (success) {
+                    console.log('bkash', responseData);
+                    return bKash.create().onSuccess(responseData);
+                }
+                return bKash.create().onError();
+            },
+            proceedWithRocket(success, responseData) {
 
-        },
-        proceedWithRocket(responseData) {
+            },
+            proceedWithNagad(success, responseData) {
 
-        },
-        proceedWithNagad(responseData) {
-
-        },
+            },
     }">
         <x-card>
-            <form @submit.prevent="initPayment()">
-                <div class="space-y-4">
-                    <h1 class="text-xl font-semibold">Checkout Details</h1>
-                    <h2 class="text-lg">Total: {{ $order->amount }} {{ $order->currency }}</h2>
+            <form @submit.prevent="handleCheckoutFormSubmit()">
+                <div>
+                    <h1>Checkout Details</h1>
+                    <h2>Total: {{ $order->amount }} {{ $order->currency }}</h2>
                     <p>Select Payment Method</p>
                     <div class="flex gap-4">
                         <label>
@@ -122,14 +179,25 @@
                             <span class="ml-2">Upay</span>
                         </label>
                     </div>
-                    <button
-                        type="submit"
-                        class="flex items-center gap-2 px-4 py-2 transition bg-blue-400 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        :disabled="props.loading"
-                    >
-                        <x-icons.spinner x-show="props.loading" />
-                        <span>Continue</span>
-                    </button>
+
+                    <div class="flex mt-4">
+                        <button
+                            type="submit"
+                            class="flex items-center gap-2 px-4 py-2 text-base transition bg-blue-400 rounded-md hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            :disabled="props.loading"
+                        >
+                            <x-icons.arrow-right x-show="!props.loading" />
+                            <x-icons.spinner x-show="props.loading" />
+                            <span>Continue</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            id="bKash_button"
+                            class="invisible h-0"
+                        >Pay with bKash</button>
+                    </div>
+
                     <template x-if="errors && Object.keys(errors).length > 0">
                         <ul class="text-red-500">
                             <template x-for="error in errors">

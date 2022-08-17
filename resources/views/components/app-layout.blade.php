@@ -11,6 +11,7 @@
         @else
             <title>{{ config('app.name', 'Laravel') }}</title>
         @endisset
+        @stack('head')
         @isset($head)
             {{ $head }}
         @endisset
@@ -19,6 +20,7 @@
         <div class="max-w-full mx-auto prose-sm prose">
             {{ $slot }}
         </div>
+        @stack('footer')
         @isset($footer)
             {{ $footer }}
         @endisset
